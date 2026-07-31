@@ -1,0 +1,22 @@
+# macOS Finder and system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon files for folders
+Icon_
+
+# Thumbnails and filesystem metadata
+._*
+.Spotlight-V100
+.Trashes
+
+# Filesystem files
+Files.bbs
+
+# Disk images
+*.dmg
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
