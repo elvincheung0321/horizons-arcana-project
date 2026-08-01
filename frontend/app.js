@@ -4,7 +4,7 @@ const API_BASE = "http://127.0.0.1:8000";
 const state = {
   from: null,
   to: null,
-  kind: "shops",
+  kind: "interesting_places",
   radiusM: 1000,
   stations: [],
   markers: new Map(),

@@ -5,8 +5,8 @@ from fetch_places import fetch_places
 from descriptions import get_places
 
 station_name = "Orchard"
-kinds_list = ["shops", "foods", "amusements"]
-kinds = kinds_list[1]
+kinds_list = ["interesting_places", "shops", "foods", "amusements"]
+kinds = kinds_list[0]
 
 stations = pd.read_csv(Path(__file__).with_name("mrt_stations.csv"))
 row = stations.loc[stations["name"] == station_name].iloc[0]

@@ -11,7 +11,7 @@ from fetch_places import fetch_places
 
 FROM_STATION = "Orchard"
 TO_STATION = "Bugis"
-KIND = "foods"
+KIND = "interesting_places"
 RADIUS = 1000
 
 
@@ -82,7 +82,7 @@ def match_csv_station(stations, onemap_name):
     return None
 
 
-def find_along_route(from_station, to_station, kind="foods", radius=1000):
+def find_along_route(from_station, to_station, kind="interesting_places", radius=1000):
     stations = load_stations()
 
     if from_station not in set(stations["name"]) or to_station not in set(stations["name"]):

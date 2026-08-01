@@ -270,7 +270,7 @@ input {
 
 .kind-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.25rem;
   padding: 0.25rem;
   background: #0f0f0f;
