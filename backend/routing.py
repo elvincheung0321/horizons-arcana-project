@@ -1,7 +1,3 @@
-"""
-Sample: pick 2 MRT stations → OneMap finds stops in between → OpenTripMap attractions.
-"""
-
 from datetime import datetime
 from pathlib import Path
 

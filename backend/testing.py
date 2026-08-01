@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-# backend/testing.py
-import requests
-from urllib.parse import urlencode
-=======
->>>>>>> a77fc477a8dc87bca00c3c5dd8759b03c38a631e
 import pandas as pd
 from pathlib import Path
 
