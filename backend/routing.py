@@ -6,12 +6,13 @@ import requests
 
 from config import ONEMAP_TOKEN
 from fetch_places import fetch_places
-from descriptions import get_descriptions
+from descriptions import get_places
 
 
-FROM_STATION = "Orchard" #user choice of station
-TO_STATION = "Bugis" #user choice of station
-KIND = "foods"  #user choice of category
+FROM_STATION = "Orchard"
+TO_STATION = "Bugis"
+KIND = "foods"
+RADIUS = 1000
 
 
 def load_stations():
@@ -81,32 +82,53 @@ def match_csv_station(stations, onemap_name):
     return None
 
 
-def main():
-
+def find_along_route(from_station, to_station, kind="foods", radius=1000):
     stations = load_stations()
 
-    start_lat, start_lon = station_coords(stations, FROM_STATION)
-    end_lat, end_lon = station_coords(stations, TO_STATION)
+    if from_station not in set(stations["name"]) or to_station not in set(stations["name"]):
+        raise ValueError("Unknown station name")
 
-    print(f"Routing {FROM_STATION} → {TO_STATION} ({KIND})")
+    start_lat, start_lon = station_coords(stations, from_station)
+    end_lat, end_lon = station_coords(stations, to_station)
 
     onemap_stops = route_rail_stops(ONEMAP_TOKEN, start_lat, start_lon, end_lat, end_lon)
-    print("OneMap stops:", onemap_stops)
 
-    all_descriptions = []
+    matched_stops = []
+    places = []
+    seen_xids = set()
+
     for raw_name in onemap_stops:
         csv_name = match_csv_station(stations, raw_name)
         if not csv_name:
-            print(f"  skip (not in CSV): {raw_name}")
             continue
 
+        matched_stops.append(csv_name)
         lat, lon = station_coords(stations, csv_name)
-        df = fetch_places(lon, lat, KIND)
-        descriptions = get_descriptions(df)
-        print(f"\n{csv_name}: {len(descriptions)} places")
-        all_descriptions.extend(descriptions)
+        df = fetch_places(lon, lat, kind, radius=radius)
+        for place in get_places(df):
+            if place["xid"] in seen_xids:
+                continue
+            seen_xids.add(place["xid"])
+            places.append({**place, "station": csv_name})
 
-    print(f"\nTotal attraction blurbs: {len(all_descriptions)}")
+    return {
+        "from": from_station,
+        "to": to_station,
+        "kind": kind,
+        "radius": radius,
+        "stops": matched_stops,
+        "places": places,
+    }
+
+
+def main():
+    result = find_along_route(FROM_STATION, TO_STATION, KIND, RADIUS)
+    print(f"Routing {result['from']} → {result['to']} ({result['kind']})")
+    print("Stops:", result["stops"])
+    print(f"Total places: {len(result['places'])}")
+    for place in result["places"]:
+        print(f"\n[{place['station']}] {place['name']}")
+        print(place["description"])
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 const MAX_RADIUS_M = 2000;
+const API_BASE = "http://127.0.0.1:8000";
 
 const state = {
   from: null,
@@ -17,6 +18,8 @@ const goBtn = document.getElementById("go-btn");
 const clearBtn = document.getElementById("clear-btn");
 const radiusInput = document.getElementById("radius-input");
 const radiusValueEl = document.getElementById("radius-value");
+const resultsStatus = document.getElementById("results-status");
+const resultsList = document.getElementById("results-list");
 
 function formatRadius(meters) {
   const km = meters / 1000;
@@ -32,7 +35,6 @@ function setRadius(meters) {
   radiusInput.style.setProperty("--radius-pct", `${pct}%`);
 }
 
-// Official LTA system map pixel size
 const MAP_SIZE = 3600;
 const imageBounds = [
   [0, 0],
@@ -90,6 +92,38 @@ function updatePanel() {
   goBtn.disabled = !(state.from && state.to && state.from !== state.to);
 }
 
+function clearResults() {
+  resultsStatus.textContent = "";
+  resultsList.innerHTML = "";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function renderResults(data) {
+  const places = data.places || [];
+  resultsStatus.textContent = places.length
+    ? `${places.length} places along ${data.stops.length} stops`
+    : "No places found along this route";
+
+  resultsList.innerHTML = places
+    .map(
+      (place) => `
+      <article class="result-item">
+        <p class="result-station">${escapeHtml(place.station)}</p>
+        <h3 class="result-name">${escapeHtml(place.name)}</h3>
+        <p class="result-desc">${escapeHtml(place.description)}</p>
+      </article>
+    `
+    )
+    .join("");
+}
+
 function selectStation(name) {
   if (!state.from || (state.from && state.to)) {
     state.from = name;
@@ -99,6 +133,7 @@ function selectStation(name) {
   } else {
     state.to = name;
   }
+  clearResults();
   refreshMarkerStyles();
   updatePanel();
 
@@ -126,7 +161,6 @@ async function loadStations() {
   fillSelects(allStations.map((s) => s.name));
 
   for (const station of positions) {
-    // CRS.Simple uses [y, x]; y already flipped for this image
     const marker = L.marker([station.y, station.x], {
       icon: markerIcon(null),
       title: station.name,
@@ -153,6 +187,7 @@ fromSelect.addEventListener("change", () => {
   if (!fromSelect.value) return;
   state.from = fromSelect.value;
   state.to = null;
+  clearResults();
   refreshMarkerStyles();
   updatePanel();
   const marker = state.markers.get(state.from);
@@ -166,6 +201,7 @@ toSelect.addEventListener("change", () => {
     return;
   }
   state.to = toSelect.value;
+  clearResults();
   refreshMarkerStyles();
   updatePanel();
   const marker = state.markers.get(state.to);
@@ -187,13 +223,36 @@ radiusInput.addEventListener("input", () => {
 clearBtn.addEventListener("click", () => {
   state.from = null;
   state.to = null;
+  clearResults();
   refreshMarkerStyles();
   updatePanel();
 });
 
-goBtn.addEventListener("click", () => {
+goBtn.addEventListener("click", async () => {
   if (!state.from || !state.to) return;
-  // Backend not connected yet
+
+  goBtn.disabled = true;
+  resultsStatus.textContent = "Searching along route…";
+  resultsList.innerHTML = "";
+
+  const url = new URL(`${API_BASE}/api/route`, window.location.origin);
+  url.searchParams.set("from", state.from);
+  url.searchParams.set("to", state.to);
+  url.searchParams.set("kind", state.kind);
+  url.searchParams.set("radius", String(state.radiusM));
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "Request failed");
+    }
+    renderResults(data);
+  } catch (err) {
+    resultsStatus.textContent = err.message || "Could not reach backend";
+  } finally {
+    updatePanel();
+  }
 });
 
 setRadius(state.radiusM);

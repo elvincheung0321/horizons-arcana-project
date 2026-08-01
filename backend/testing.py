@@ -2,23 +2,21 @@ import pandas as pd
 from pathlib import Path
 
 from fetch_places import fetch_places
-from descriptions import get_descriptions
+from descriptions import get_places
 
-station_name = "Orchard" #user choice of station
+station_name = "Orchard"
 kinds_list = ["shops", "foods", "amusements"]
-kinds = kinds_list[1] #user choice of category
+kinds = kinds_list[1]
 
 stations = pd.read_csv(Path(__file__).with_name("mrt_stations.csv"))
 row = stations.loc[stations["name"] == station_name].iloc[0]
 lon, lat = row["lon"], row["lat"]
 
 df = fetch_places(lon, lat, kinds)
+places = get_places(df)
 
-descriptions = get_descriptions(df)
-if not descriptions:
+if not places:
     print("No places found")
 else:
-    print(descriptions)
-    print(len(descriptions))
-
-
+    print(places)
+    print(len(places))

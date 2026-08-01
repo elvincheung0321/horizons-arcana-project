@@ -447,6 +447,63 @@ button.ghost:focus-visible {
   outline-offset: 2px;
 }
 
+.results {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--line);
+}
+
+.results-status {
+  margin: 0;
+  min-height: 1.1em;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.results-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.result-item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.7rem 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.result-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.result-station {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.result-name {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.result-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 #map {
   height: 100%;
   min-height: 320px;
