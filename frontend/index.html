@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singapore MRT — Route finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <header class="brand">
+        <h1>Pick two stations</h1>
+        <p class="brand-sub">Places along your MRT route</p>
+        <span class="brand-rule" aria-hidden="true"></span>
+      </header>
+
+      <section class="route-card" aria-label="Selected route">
+        <div class="pick">
+          <span class="rail">
+            <span class="dot start"></span>
+            <span class="rail-line"></span>
+          </span>
+          <div class="pick-text">
+            <p class="label">From</p>
+            <p id="from-name" class="value" data-empty="true">Tap a station</p>
+          </div>
+        </div>
+        <div class="pick">
+          <span class="rail">
+            <span class="dot end"></span>
+          </span>
+          <div class="pick-text">
+            <p class="label">To</p>
+            <p id="to-name" class="value" data-empty="true">Tap a station</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls">
+        <label class="field">
+          <span class="label">From station</span>
+          <select id="from-select">
+            <option value="">Select start station</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="label">To station</span>
+          <select id="to-select">
+            <option value="">Select end station</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="kinds">
+        <p class="label">Looking for</p>
+        <div class="kind-row" role="group" aria-label="Attraction category">
+          <button type="button" class="kind active" data-kind="shops">Shops</button>
+          <button type="button" class="kind" data-kind="foods">Foods</button>
+          <button type="button" class="kind" data-kind="amusements">Amusements</button>
+        </div>
+      </section>
+
+      <section class="radius">
+        <div class="radius-head">
+          <p class="label">Within radius</p>
+          <p id="radius-value" class="radius-value">1.0 km</p>
+        </div>
+        <input
+          id="radius-input"
+          type="range"
+          min="200"
+          max="2000"
+          step="100"
+          value="1000"
+          aria-label="Search radius up to 2 kilometres"
+        />
+        <div class="radius-scale">
+          <span>0.2 km</span>
+          <span>2 km max</span>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="clear-btn" class="ghost">Clear</button>
+        <button type="button" id="go-btn" class="primary" disabled>Find along route</button>
+      </div>
+    </aside>
+
+    <main id="map" aria-label="Singapore MRT system map"></main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,10 +1,5 @@
-# backend/sample_route_attractions.py
 """
 Sample: pick 2 MRT stations → OneMap finds stops in between → OpenTripMap attractions.
-
-Setup:
-  1. Put your OneMap access token in config.py as ONEMAP_TOKEN
-  2. Run:  .venv/bin/python backend/sample_route_attractions.py
 """
 
 from datetime import datetime
@@ -33,7 +28,6 @@ def station_coords(stations, name):
 
 
 def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
-    """Return ordered list of MRT stop names from OneMap rail routing."""
     now = datetime.now()
     params = {
         "start": f"{start_lat},{start_lon}",
@@ -45,13 +39,13 @@ def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
         "numItineraries": 1,
     }
     url = "https://www.onemap.gov.sg/api/public/routingsvc/route"
-    res = requests.get(
+    response = requests.get(
         url,
         params=params,
         headers={"Authorization": token},
     )
-    res.raise_for_status()
-    data = res.json()
+
+    data = response.json()
 
     stops = []
     itineraries = data.get("plan", {}).get("itineraries", [])
@@ -62,9 +56,9 @@ def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
         if leg.get("mode") not in ("SUBWAY", "RAIL", "TRAM"):
             continue
 
-        frm = leg.get("from", {}).get("name")
-        if frm and (not stops or stops[-1] != frm):
-            stops.append(frm)
+        _from = leg.get("from", {}).get("name")
+        if _from and (not stops or stops[-1] != _from):
+            stops.append(_from)
 
         for mid in leg.get("intermediateStops") or []:
             name = mid.get("name")
@@ -92,8 +86,6 @@ def match_csv_station(stations, onemap_name):
 
 
 def main():
-    if not ONEMAP_TOKEN or ONEMAP_TOKEN.startswith("PASTE_"):
-        raise SystemExit("Set ONEMAP_TOKEN in config.py first")
 
     stations = load_stations()
 
