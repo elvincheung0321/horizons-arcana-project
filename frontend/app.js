@@ -1,5 +1,6 @@
 const MAX_RADIUS_M = 2000;
-const API_BASE = "http://127.0.0.1:8000";
+// Same origin as the page (works locally via uvicorn and on Render)
+const API_BASE = "";
 
 const state = {
   from: null,

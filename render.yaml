@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: horizons-arcana
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: OPENTRIPMAP_API_KEY
+        sync: false
+      - key: ONEMAP_TOKEN
+        sync: false
