@@ -1,35 +1,30 @@
+<<<<<<< HEAD
 # backend/testing.py
 import requests
 from urllib.parse import urlencode
+=======
+>>>>>>> a77fc477a8dc87bca00c3c5dd8759b03c38a631e
 import pandas as pd
-import os
+from pathlib import Path
 
-lon = 103.835899
-lat = 1.300946
+from fetch_places import fetch_places
+from descriptions import get_descriptions
 
-base_params = {
-    "radius": 1000,
-    "lon": lon,
-    "lat": lat,
-    "kinds": "tourist_facilities,",
-    "apikey": "5ae2e3f221c38a28845f05b6828bfeb528f61464302b6ce912c6006e",
-}
+station_name = "Orchard" #user choice of station
+kinds_list = ["shops", "foods", "amusements"]
+kinds = kinds_list[1] #user choice of category
+
+stations = pd.read_csv(Path(__file__).with_name("mrt_stations.csv"))
+row = stations.loc[stations["name"] == station_name].iloc[0]
+lon, lat = row["lon"], row["lat"]
+
+df = fetch_places(lon, lat, kinds)
+
+descriptions = get_descriptions(df)
+if not descriptions:
+    print("No places found")
+else:
+    print(descriptions)
+    print(len(descriptions))
 
 
-def fetch_places(rate):
-    params = {**base_params, "rate": rate}
-    url = "http://api.opentripmap.com/0.1/en/places/radius?" + urlencode(params, safe=",")
-    data = requests.get(url).json()
-    return pd.json_normalize(data["features"])
-
-df_heritage = fetch_places("3h")
-df_other = fetch_places("3")
-
-df = pd.concat([df_heritage, df_other], ignore_index=True)
-df = df.drop_duplicates(subset="properties.xid", keep="first")
-list = []
-for feature in df["properties.name"]:
-    list.append(feature)
-
-print(list)
-print(len(list))
