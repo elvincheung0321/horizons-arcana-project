@@ -5,8 +5,8 @@ import pandas as pd
 import requests
 
 from config import ONEMAP_TOKEN
+from descriptions import enrich_places
 from fetch_places import fetch_places
-from descriptions import get_places
 
 
 FROM_STATION = "Orchard"
@@ -94,8 +94,8 @@ def find_along_route(from_station, to_station, kind="foods", radius=1000):
     onemap_stops = route_rail_stops(ONEMAP_TOKEN, start_lat, start_lon, end_lat, end_lon)
 
     matched_stops = []
-    places = []
     seen_xids = set()
+    pending = []
 
     for raw_name in onemap_stops:
         csv_name = match_csv_station(stations, raw_name)
@@ -105,11 +105,26 @@ def find_along_route(from_station, to_station, kind="foods", radius=1000):
         matched_stops.append(csv_name)
         lat, lon = station_coords(stations, csv_name)
         df = fetch_places(lon, lat, kind, radius=radius)
-        for place in get_places(df):
-            if place["xid"] in seen_xids:
+        if df.empty or "properties.xid" not in df.columns:
+            continue
+
+        has_names = "properties.name" in df.columns
+        for idx, xid in enumerate(df["properties.xid"].tolist()):
+            if xid in seen_xids:
                 continue
-            seen_xids.add(place["xid"])
-            places.append({**place, "station": csv_name})
+            seen_xids.add(xid)
+            fallback = ""
+            if has_names:
+                raw = df["properties.name"].iloc[idx]
+                if isinstance(raw, str) and raw.strip():
+                    fallback = raw.strip()
+            pending.append((xid, fallback, csv_name))
+
+    enriched = enrich_places([(xid, fallback) for xid, fallback, _ in pending])
+    places = [
+        {**place, "station": station}
+        for place, (_, _, station) in zip(enriched, pending)
+    ]
 
     return {
         "from": from_station,
