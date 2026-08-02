@@ -27,7 +27,6 @@ __pycache__/
 .venv/
 venv/
 .env
-backend/config.py
 
 # Rust
 backend-but-rust/target/
