@@ -1,8 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
-import json
-import time as time_mod
 
 import pandas as pd
 import requests
@@ -17,33 +15,6 @@ TO_STATION = "Bugis"
 KIND = "interesting_places"
 RADIUS = 1000
 SG_TZ = ZoneInfo("Asia/Singapore")
-# #region agent log
-_DEBUG_LOG = Path(__file__).resolve().parent.parent / ".cursor" / "debug-59b7ca.log"
-
-
-def _dbg(hypothesis_id, location, message, data, run_id="pre-fix"):
-    try:
-        _DEBUG_LOG.parent.mkdir(parents=True, exist_ok=True)
-        with _DEBUG_LOG.open("a", encoding="utf-8") as f:
-            f.write(
-                json.dumps(
-                    {
-                        "sessionId": "59b7ca",
-                        "runId": run_id,
-                        "hypothesisId": hypothesis_id,
-                        "location": location,
-                        "message": message,
-                        "data": data,
-                        "timestamp": int(time_mod.time() * 1000),
-                    }
-                )
-                + "\n"
-            )
-    except Exception:
-        pass
-
-
-# #endregion
 
 
 def load_stations():
@@ -67,64 +38,17 @@ def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
         "numItineraries": 1,
     }
     url = "https://www.onemap.gov.sg/api/public/routingsvc/route"
-    # #region agent log
-    _dbg(
-        "B",
-        "routing.py:route_rail_stops",
-        "OneMap request time context",
-        {
-            "date": params["date"],
-            "time": params["time"],
-            "tz": str(now.tzinfo),
-            "utcNow": datetime.utcnow().strftime("%H:%M:%S"),
-            "tokenPresent": bool(token),
-            "tokenLen": len(token or ""),
-            "start": params["start"],
-            "end": params["end"],
-            "mode": params["mode"],
-        },
-    )
-    # #endregion
     response = requests.get(
         url,
         params=params,
         headers={"Authorization": token},
     )
 
-    # #region agent log
-    body_preview = ""
-    try:
-        body_preview = response.text[:240]
-    except Exception:
-        body_preview = ""
-    _dbg(
-        "B",
-        "routing.py:route_rail_stops",
-        "OneMap response",
-        {
-            "status": response.status_code,
-            "ok": response.ok,
-            "bodyPreview": body_preview,
-        },
-    )
-    # #endregion
-
     if response.status_code == 401:
-        # #region agent log
-        _dbg("A", "routing.py:route_rail_stops", "OneMap 401 unauthorized", {"status": 401})
-        # #endregion
         raise RuntimeError(
             "OneMap unauthorized — set a valid ONEMAP_TOKEN in Render env vars"
         )
     if not response.ok:
-        # #region agent log
-        _dbg(
-            "B",
-            "routing.py:route_rail_stops",
-            "OneMap non-OK",
-            {"status": response.status_code, "bodyPreview": body_preview},
-        )
-        # #endregion
         raise RuntimeError(f"OneMap routing failed ({response.status_code})")
 
     data = response.json()
@@ -132,9 +56,6 @@ def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
     stops = []
     itineraries = data.get("plan", {}).get("itineraries", [])
     if not itineraries:
-        # #region agent log
-        _dbg("C", "routing.py:route_rail_stops", "No itineraries in plan", {"keys": list(data.keys())})
-        # #endregion
         return stops
 
     for leg in itineraries[0].get("legs", []):
@@ -196,31 +117,13 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
         _add_stop(match_csv_station(stations, raw_name))
     _add_stop(to_station)
 
-    # #region agent log
-    _dbg(
-        "G",
-        "routing.py:find_along_route",
-        "Stop list after endpoint fallback",
-        {
-            "from": from_station,
-            "to": to_station,
-            "onemapStops": onemap_stops,
-            "matchedStops": matched_stops,
-            "usedEndpointFallback": len(onemap_stops) == 0,
-        },
-        run_id="post-fix",
-    )
-    # #endregion
-
     seen_xids = set()
     pending = []
-    empty_place_stops = 0
 
     for csv_name in matched_stops:
         lat, lon = station_coords(stations, csv_name)
         df = fetch_places(lon, lat, kind, radius=radius)
         if df.empty or "properties.xid" not in df.columns:
-            empty_place_stops += 1
             continue
 
         has_names = "properties.name" in df.columns
@@ -241,25 +144,6 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
         {**place, "station": station}
         for place, (_, _, station) in zip(enriched, pending)
     ]
-
-    # #region agent log
-    _dbg(
-        "F",
-        "routing.py:find_along_route",
-        "Route search summary",
-        {
-            "from": from_station,
-            "to": to_station,
-            "kind": kind,
-            "onemapStops": len(onemap_stops),
-            "matchedStops": len(matched_stops),
-            "emptyPlaceStops": empty_place_stops,
-            "pending": len(pending),
-            "places": len(places),
-        },
-        run_id="post-fix",
-    )
-    # #endregion
 
     return {
         "from": from_station,
