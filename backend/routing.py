@@ -42,6 +42,13 @@ def route_rail_stops(token, start_lat, start_lon, end_lat, end_lon):
         headers={"Authorization": token},
     )
 
+    if response.status_code == 401:
+        raise RuntimeError(
+            "OneMap unauthorized — set a valid ONEMAP_TOKEN in Render env vars"
+        )
+    if not response.ok:
+        raise RuntimeError(f"OneMap routing failed ({response.status_code})")
+
     data = response.json()
 
     stops = []
