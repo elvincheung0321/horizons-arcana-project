@@ -181,17 +181,42 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
 
     onemap_stops = route_rail_stops(ONEMAP_TOKEN, start_lat, start_lon, end_lat, end_lon)
 
+    # Always include selected endpoints. Short hops (e.g. Orchard→Somerset) often
+    # come back from OneMap as WALK-only with zero SUBWAY stops.
     matched_stops = []
+    seen_stop_names = set()
+
+    def _add_stop(name):
+        if name and name not in seen_stop_names:
+            seen_stop_names.add(name)
+            matched_stops.append(name)
+
+    _add_stop(from_station)
+    for raw_name in onemap_stops:
+        _add_stop(match_csv_station(stations, raw_name))
+    _add_stop(to_station)
+
+    # #region agent log
+    _dbg(
+        "G",
+        "routing.py:find_along_route",
+        "Stop list after endpoint fallback",
+        {
+            "from": from_station,
+            "to": to_station,
+            "onemapStops": onemap_stops,
+            "matchedStops": matched_stops,
+            "usedEndpointFallback": len(onemap_stops) == 0,
+        },
+        run_id="post-fix",
+    )
+    # #endregion
+
     seen_xids = set()
     pending = []
     empty_place_stops = 0
 
-    for raw_name in onemap_stops:
-        csv_name = match_csv_station(stations, raw_name)
-        if not csv_name:
-            continue
-
-        matched_stops.append(csv_name)
+    for csv_name in matched_stops:
         lat, lon = station_coords(stations, csv_name)
         df = fetch_places(lon, lat, kind, radius=radius)
         if df.empty or "properties.xid" not in df.columns:
