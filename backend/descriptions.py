@@ -2,7 +2,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from fetch_info import fetch_info
 
-MAX_WORKERS = 6
+# Keep low: OpenTripMap free tier rate-limits concurrent xid lookups (429).
+MAX_WORKERS = 2
+MAX_PLACES = 24
 
 
 def _from_info(xid, info, fallback_name=""):
@@ -40,6 +42,7 @@ def enrich_places(records):
     if not records:
         return []
 
+    records = records[:MAX_PLACES]
     by_xid = {}
     workers = min(MAX_WORKERS, len(records))
     with ThreadPoolExecutor(max_workers=workers) as pool:

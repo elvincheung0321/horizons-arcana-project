@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 
 from config import ONEMAP_TOKEN
-from descriptions import enrich_places
+from descriptions import MAX_PLACES, enrich_places
 from fetch_places import fetch_places
 
 
@@ -184,6 +184,7 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
     matched_stops = []
     seen_xids = set()
     pending = []
+    empty_place_stops = 0
 
     for raw_name in onemap_stops:
         csv_name = match_csv_station(stations, raw_name)
@@ -194,6 +195,7 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
         lat, lon = station_coords(stations, csv_name)
         df = fetch_places(lon, lat, kind, radius=radius)
         if df.empty or "properties.xid" not in df.columns:
+            empty_place_stops += 1
             continue
 
         has_names = "properties.name" in df.columns
@@ -208,11 +210,31 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
                     fallback = raw.strip()
             pending.append((xid, fallback, csv_name))
 
+    pending = pending[:MAX_PLACES]
     enriched = enrich_places([(xid, fallback) for xid, fallback, _ in pending])
     places = [
         {**place, "station": station}
         for place, (_, _, station) in zip(enriched, pending)
     ]
+
+    # #region agent log
+    _dbg(
+        "F",
+        "routing.py:find_along_route",
+        "Route search summary",
+        {
+            "from": from_station,
+            "to": to_station,
+            "kind": kind,
+            "onemapStops": len(onemap_stops),
+            "matchedStops": len(matched_stops),
+            "emptyPlaceStops": empty_place_stops,
+            "pending": len(pending),
+            "places": len(places),
+        },
+        run_id="post-fix",
+    )
+    # #endregion
 
     return {
         "from": from_station,
