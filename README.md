@@ -51,3 +51,9 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 We use Render, a free cloud hosting website to deploy this onto a website
 
+## Original photo and website
+<img width="1710" height="1059" alt="Screenshot 2026-08-02 at 11 11 02 AM" src="https://github.com/user-attachments/assets/bfd0dabb-3ac2-4db7-a76e-793d14bd2a91" />
+<img width="1654" height="1072" alt="20260802_101206" src="https://github.com/user-attachments/assets/7bd80340-7613-4d2c-802b-19b166c99516" />
+
+
+
