@@ -26,6 +26,7 @@ def get_places(df):
 
     rows = df.drop_duplicates(subset="properties.xid", keep="first")
     records = []
+    seen_names = set()
     for _, row in rows.iterrows():
         xid = row["properties.xid"]
         fallback = ""
@@ -33,6 +34,11 @@ def get_places(df):
             raw = row["properties.name"]
             if isinstance(raw, str) and raw.strip():
                 fallback = raw.strip()
+        name_key = fallback.casefold()
+        if name_key and name_key in seen_names:
+            continue
+        if name_key:
+            seen_names.add(name_key)
         records.append((xid, fallback))
 
     return enrich_places(records)
