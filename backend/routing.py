@@ -118,6 +118,7 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
     _add_stop(to_station)
 
     seen_xids = set()
+    seen_names = set()
     pending = []
 
     for csv_name in matched_stops:
@@ -130,12 +131,17 @@ def find_along_route(from_station, to_station, kind="interesting_places", radius
         for idx, xid in enumerate(df["properties.xid"].tolist()):
             if xid in seen_xids:
                 continue
-            seen_xids.add(xid)
             fallback = ""
             if has_names:
                 raw = df["properties.name"].iloc[idx]
                 if isinstance(raw, str) and raw.strip():
                     fallback = raw.strip()
+            name_key = fallback.casefold()
+            if name_key and name_key in seen_names:
+                continue
+            seen_xids.add(xid)
+            if name_key:
+                seen_names.add(name_key)
             pending.append((xid, fallback, csv_name))
 
     pending = pending[:MAX_PLACES]
