@@ -10,8 +10,8 @@ Pick two Singapore MRT stations and discover places along the route
 ## Setup
 
 1. Get API keys:
-   - [OneMap](https://www.onemap.gov.sg/apidocs/) — OneMap API Key
-   - [OpenTripMap](https://dev.opentripmap.org/docs) — OpenTripMap API Key
+   - [OneMap](https://www.onemap.gov.sg/apidocs/)
+   - [OpenTripMap](https://dev.opentripmap.org/docs)
 
 2. Configure the backend:
 
