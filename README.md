@@ -40,12 +40,12 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 - Used OneMap and OpenTripMap
 
 
-| Param    | Notes                                              |
+| Params    | Notes                                              |
 |----------|----------------------------------------------------|
 | `from`   | Start station name                                 |
 | `to`     | End station name (must be different from `from`)         |
 | `kind`   | `interesting_places`, `shops`, `foods`, `amusements` |
-| `radius` | Search radius in meters (200–2000, default 1000)   |
+| `radius` | Search radius in meters (200–2000, default 1000) (basically how far you want to walk)  |
 
 ## Deploy
 
