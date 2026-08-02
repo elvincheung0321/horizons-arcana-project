@@ -37,10 +37,24 @@ def fetch_rate(lon, lat, kinds, rate, radius, retries=4):
 
 
 def fetch_places(lon, lat, kinds, radius=1000):
-    # Single rate filter cuts API calls in half vs fetching 3h + 3 separately.
+    #duplicates removed
     df = fetch_rate(lon, lat, kinds, "3", radius)
 
     if df.empty or "properties.xid" not in df.columns:
         return pd.DataFrame()
 
-    return df.drop_duplicates(subset="properties.xid", keep="first")
+    df = df.drop_duplicates(subset="properties.xid", keep="first")
+
+
+    if "properties.name" in df.columns:
+        name_key = (
+            df["properties.name"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.casefold()
+        )
+        keep = (name_key == "") | ~name_key.duplicated(keep="first")
+        df = df.loc[keep].reset_index(drop=True)
+
+    return df
