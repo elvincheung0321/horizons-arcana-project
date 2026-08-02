@@ -44,7 +44,7 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 |----------|----------------------------------------------------|
 | `from`   | Start station name                                 |
 | `to`     | End station name (must be different from `from`)         |
-| `kind`   | `interesting_places`, `shops`, `foods`, `amusements` |
+| `kind`   | `interesting_places`, `shops`, `foods`, `amusements` (amusements aren't very common in singapore finding no places is normal)|
 | `radius` | Search radius in meters (200–2000, default 1000) (basically how far you want to walk)  |
 
 ## Deploy
